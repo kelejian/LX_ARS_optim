@@ -1,0 +1,119 @@
+# configs/param_space.yaml
+
+# ---------------------------------------------------------
+# 参数空间定义 (Parameter Space Definition)
+# ---------------------------------------------------------
+# 对应 data_package.py 中 params_np 的 13 维向量结构
+# 只有 role='control' 且 trainable=True 的参数才会被 ARS 算法优化
+
+parameters:
+  # --- 1. 碰撞工况 (Crash Conditions) - State ---
+  - name: "impact_velocity"
+    index: 0
+    role: "state"
+    type: "continuous"
+    min: 0.0   # km/h
+    max: 100.0 # km/h, 需涵盖数据集最大值
+    trainable: False
+
+  - name: "impact_angle"
+    index: 1
+    role: "state"
+    type: "continuous"
+    min: -30.0 # degree
+    max: 30.0
+    trainable: False
+
+  - name: "overlap"
+    index: 2
+    role: "state"
+    type: "continuous"
+    min: 0.0   # %
+    max: 1.0
+    trainable: False
+
+  # --- 2. 约束系统参数 (Restraint System Parameters) - Control ---
+  # 这些是算法需要寻找最优解的对象
+  # 如果想固定某个参数（如不调节 LL1），将 trainable 改为 False 即可
+
+  - name: "LL1" # 安全带一级限力值
+    index: 3
+    role: "control"
+    type: "continuous"
+    min: 2.0  # kN
+    max: 7.0  # kN
+    trainable: False  # [可配置] 是否参与寻优
+
+  - name: "LL2" # 安全带二级限力值
+    index: 4
+    role: "control"
+    type: "continuous"
+    min: 2.0  # kN
+    max: 7.0  # kN
+    trainable: False # [可配置] 是否参与寻优
+
+  - name: "BTF" # 预紧器点火时刻
+    index: 5
+    role: "control"
+    type: "continuous"
+    min: 10.0 # ms
+    max: 100.0
+    trainable: True
+
+  - name: "LLATTF" # 限力切换时刻
+    index: 6
+    role: "control"
+    type: "continuous"
+    min: 0.0 # ms
+    max: 150.0
+    trainable: True
+
+  - name: "AFT" # 气囊点火时刻
+    index: 7
+    role: "control"
+    type: "continuous"
+    min: 10.0 # ms
+    max: 100.0
+    trainable: True
+
+  # --- 3. 乘员/座椅状态 (Occupant/Seat Status) - State ---
+  # 虽然物理上可调，但在单次碰撞优化中通常作为初始条件
+
+  - name: "SP" # 座椅位置
+    index: 8
+    role: "state"
+    type: "continuous"
+    min: 0.0
+    max: 300.0 # mm
+    trainable: False
+
+  - name: "SH" # 座椅高度
+    index: 9
+    role: "state"
+    type: "continuous"
+    min: 0.0
+    max: 100.0 # mm
+    trainable: False
+
+  - name: "RA" # 靠背角
+    index: 10
+    role: "state"
+    type: "continuous"
+    min: 15.0 # degree
+    max: 30.0
+    trainable: False
+
+  # --- 4. 离散特征 - State ---
+  - name: "is_driver_side"
+    index: 11
+    role: "state"
+    type: "discrete"
+    values: [0, 1] # 0: 副驾，1: 主驾
+    trainable: False
+
+  - name: "OT" # 乘员体征 (1:5th, 2:50th, 3:95th)
+    index: 12
+    role: "state"
+    type: "discrete"
+    values: [1, 2, 3] # 1:5th, 2:50th, 3:95th
+    trainable: False
