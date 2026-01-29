@@ -1,0 +1,18 @@
+# --- Core DL Framework ---
+torch>=1.10.0
+
+# --- Scientific Computing & Data ---
+numpy
+pandas
+scikit-learn
+joblib
+
+# --- Visualization & Logging ---
+matplotlib
+tqdm
+tensorboard
+
+# --- Project Specific Dependencies ---
+PyYAML>=6.0      # 用于解析 configs/*.yaml
+imbalanced-learn
+torchinfo        

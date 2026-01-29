@@ -1,0 +1,7 @@
+ARS.md
+.vscode/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+weights/ 
