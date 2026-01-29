@@ -13,13 +13,13 @@ device: "cuda" # or "cpu"
 # ===========================
 paths:
   # 引用已有的损伤预测项目
-  surrogate_project_dir: "../LX-model-injurypredict"
+  surrogate_project_dir: "../LX_model_injurypredict"
   # 代理模型权重文件 (确保路径正确)
-  surrogate_checkpoint: "../LX-model-injurypredict/checkpoints/best_model.pth" 
+  surrogate_checkpoint: "../LX_model_injurypredict/runs/InjuryPredictModel_01281059/best_val_loss.pth" 
   
   # 数据集路径
-  data_input: "../LX-model-injurypredict/data/data_input.npz"
-  data_labels: "../LX-model-injurypredict/data/data_labels.npz"
+  data_input: "../LX_model_injurypredict/data/data_input.npz"
+  data_labels: "../LX_model_injurypredict/data/data_labels.npz"
   
   # 本项目输出
   output_dir: "./outputs"

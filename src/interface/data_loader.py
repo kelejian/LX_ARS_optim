@@ -16,7 +16,7 @@ class ARSDataLoader:
     ARS 数据加载器 (Data Loader)
     
     职责：
-    1. 加载原始的测试/验证数据集 (基于旧项目的 CrashDataset)。
+    1. 加载原始的测试/验证数据集 (基于InjuryPredict项目的 CrashDataset)。
     2. 提取"物理空间"的原始波形和工况参数。
     3. 将数据打包成 Optimizer 需要的格式 (state_dict, waveform)。
     """
@@ -65,7 +65,7 @@ class ARSDataLoader:
             
         with open(path, 'r', encoding='utf-8') as f:
             cfg = yaml.safe_load(f)
-        return cfg['parameters']
+        return cfg['parameters'] # 类型: list of dict
 
     def _load_dataset(self):
         """实例化 CrashDataset"""
@@ -75,8 +75,7 @@ class ARSDataLoader:
         
         logger.info(f"Loading raw data from {data_input_path}...")
         
-        # 实例化旧项目的 Dataset 类
-        # 它会自动读取 npz 并存储在 self.x_att_raw, self.x_acc_raw 等属性中
+        # 实例化InjuryPredict项目的 Dataset 类; 它会自动读取 npz 并存储在 self.x_att_raw, self.x_acc_raw 等属性中
         ds = self.dataset_cls(input_file=data_input_path, label_file=data_labels_path)
         return ds
 
@@ -88,7 +87,7 @@ class ARSDataLoader:
         # 尝试加载划分文件 (train_dataset.pt 等)
         # 注意：这些 .pt 文件是 torch.utils.data.Subset 对象，包含 indices
         filename = f"{self.split}_dataset.pt"
-        # 假设 .pt 文件在 surrogate_project/data/ 目录下
+        # 设 .pt 文件在 surrogate_project/data/ 目录下
         pt_path = os.path.join(self.surrogate_dir, "data", filename)
         
         if not os.path.exists(pt_path):
@@ -117,8 +116,8 @@ class ARSDataLoader:
             Dict: {
                 "case_id": int,
                 "state_dict": Dict[str, float],      # 包含所有13个参数的物理值
-                "waveform": Tensor (1, 2, 150),      # 原始物理波形
-                "ground_truth": Dict[str, float]     # 真实损伤值 (HIC, Dmax, Nij, MAIS)
+                "waveform": Tensor (1, 2, 150),      # 原始物理尺度碰撞波形(x,y方向加速度)
+                "ground_truth": Dict[str, float]     # 真实损伤值 (HIC, Dmax, Nij, AIS_head, AIS_chest, AIS_neck, MAIS)
             }
         """
         # 1. 获取 Case ID
@@ -150,6 +149,9 @@ class ARSDataLoader:
             "HIC": float(self.dataset.y_HIC[idx]),
             "Dmax": float(self.dataset.y_Dmax[idx]),
             "Nij": float(self.dataset.y_Nij[idx]),
+            "AIS_head": int(self.dataset.ais_head[idx]),
+            "AIS_chest": int(self.dataset.ais_chest[idx]),
+            "AIS_neck": int(self.dataset.ais_neck[idx]),
             "MAIS": int(self.dataset.mais[idx])
         }
         

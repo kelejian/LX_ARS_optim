@@ -19,7 +19,7 @@ from src.utils.metrics import MetricsTracker
 logger = setup_logger("RunEval")
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="ARS 在线寻优与评估 (Step 3 + Step 4)")
+    parser = argparse.ArgumentParser(description="ARS 在线寻优与评估脚本")
     parser.add_argument("--config", type=str, default="configs/default_config.yaml", help="配置文件路径")
     parser.add_argument("--split", type=str, default="test", choices=['train', 'val', 'test', 'all'], help="评估数据集划分")
     parser.add_argument("--output_dir", type=str, default=None, help="结果输出目录 (默认使用 config 中定义的路径)")

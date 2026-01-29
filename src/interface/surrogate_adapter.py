@@ -16,7 +16,7 @@ class SurrogateModelAdapter(nn.Module):
     代理模型适配器 (Adapter Pattern)
     功能：
     1. 封装原有的 InjuryPredictModel。
-    2. 自动从权重目录下的 JSON 文件读取模型结构参数 (解耦 config.py)。
+    2. 自动从权重目录下的 JSON 文件读取模型结构参数。
     3. 提供标准的 forward 接口，支持梯度回传到输入。
     """
 
@@ -44,22 +44,21 @@ class SurrogateModelAdapter(nn.Module):
         # 5. 冻结模型参数 (只优化输入, 不更新模型权重)
         self._freeze_model()
         
-        logger.info("Surrogate Model initialized and frozen successfully (Config loaded from JSON).")
+        logger.info("Surrogate Model initialized and frozen successfully (Config loaded from some ...TrainingRecord.json).")
 
     def _setup_imports(self):
         """动态添加原项目路径到 sys.path，以便加载 utils.models"""
         surrogate_dir = self.config['paths']['surrogate_project_dir']
-        abs_path = os.path.abspath(surrogate_dir)
+        abs_path = os.path.abspath(surrogate_dir) # 获取绝对路径
         
         if not os.path.exists(abs_path):
-            raise FileNotFoundError(f"Surrogate project directory not found: {abs_path}")
+            raise FileNotFoundError(f"Surrogate model project directory not found: {abs_path}")
             
         if abs_path not in sys.path:
-            sys.path.insert(0, abs_path)
+            sys.path.insert(0, abs_path) # 插入到 sys.path 前端
             logger.debug(f"Added {abs_path} to sys.path")
 
         try:
-            # 仅导入模型定义模块，不再导入 config.py
             from utils import models
             self.origin_models_module = models
         except ImportError as e:
@@ -70,9 +69,9 @@ class SurrogateModelAdapter(nn.Module):
         寻找并加载权重文件同目录下的 TrainingRecord.json
         """
         ckpt_path = self.config['paths']['surrogate_checkpoint']
-        ckpt_dir = os.path.dirname(ckpt_path)
+        ckpt_dir = os.path.dirname(ckpt_path) # 获取权重文件所在的目录
         
-        # 假设配置文件名为 TrainingRecord.json (根据 train.py 的逻辑)
+        # 配置文件名设为 TrainingRecord.json
         json_path = os.path.join(ckpt_dir, "TrainingRecord.json")
         
         # 如果找不到，尝试搜索目录下的任意 json 文件
@@ -96,8 +95,7 @@ class SurrogateModelAdapter(nn.Module):
             if "hyperparameters" in record and "model" in record["hyperparameters"]:
                 return record["hyperparameters"]["model"]
             else:
-                # 兼容可能的旧格式或直接存储参数的格式
-                return record
+                raise KeyError("Model configuration not found in JSON under 'hyperparameters.model'.")
                 
         except Exception as e:
             raise ValueError(f"Failed to parse model config from {json_path}: {e}")
@@ -107,12 +105,12 @@ class SurrogateModelAdapter(nn.Module):
         mp = self.model_structure_params
         
         # 获取离散特征类别数 (从 JSON 读取)
-        num_classes_list = mp.get('num_classes_discrete') or mp.get('num_classes_of_discrete')
+        num_classes_list = mp.get('num_classes_of_discrete')
         
         if num_classes_list is None:
             # 兜底策略：如果 JSON 里实在没有，回退到默认值并警告
-            logger.warning("'num_classes_discrete' not found in JSON. Using default [2, 3].")
-            num_classes_list = [2, 3] 
+            logger.warning("'num_classes_of_discrete' not found in JSON. Using default [1, 3].")
+            num_classes_list = [1, 3] 
 
         # 实例化模型
         try:
@@ -131,8 +129,8 @@ class SurrogateModelAdapter(nn.Module):
                 num_layers_of_mlpD=mp['num_layers_of_mlpD'],
                 dropout_MLP=mp['dropout_MLP'], 
                 dropout_TCN=mp['dropout_TCN'],
-                use_channel_attention=mp.get('use_channel_attention', True),
-                fixed_channel_weight=mp.get('fixed_channel_weight', None)
+                use_channel_attention=mp['use_channel_attention'],
+                fixed_channel_weight=mp['fixed_channel_weight']
             )
             return model.to(self.device)
         except KeyError as e:

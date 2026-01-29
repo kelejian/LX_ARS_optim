@@ -3,32 +3,31 @@
 # ---------------------------------------------------------
 # 参数空间定义 (Parameter Space Definition)
 # ---------------------------------------------------------
-# 对应 data_package.py 中 params_np 的 13 维向量结构
+# 对应 data_package.py 中 params_np 的 13 维向量结构, 参数顺序必须一致
 # 只有 role='control' 且 trainable=True 的参数才会被 ARS 算法优化
-
 parameters:
   # --- 1. 碰撞工况 (Crash Conditions) - State ---
   - name: "impact_velocity"
     index: 0
     role: "state"
     type: "continuous"
-    min: 0.0   # km/h
-    max: 100.0 # km/h, 需涵盖数据集最大值
+    min: 23   # km/h
+    max: 65.0 # km/h, 需涵盖数据集最大值
     trainable: False
 
   - name: "impact_angle"
     index: 1
     role: "state"
     type: "continuous"
-    min: -30.0 # degree
-    max: 30.0
+    min: -45.0 # degree
+    max: 45.0
     trainable: False
 
   - name: "overlap"
     index: 2
     role: "state"
     type: "continuous"
-    min: 0.0   # %
+    min: -1.0   # %
     max: 1.0
     trainable: False
 
@@ -42,14 +41,16 @@ parameters:
     type: "continuous"
     min: 2.0  # kN
     max: 7.0  # kN
+    default: 4.0
     trainable: False  # [可配置] 是否参与寻优
 
   - name: "LL2" # 安全带二级限力值
     index: 4
     role: "control"
     type: "continuous"
-    min: 2.0  # kN
-    max: 7.0  # kN
+    min: 1.5  # kN
+    max: 4.5  # kN
+    default: 4.0
     trainable: False # [可配置] 是否参与寻优
 
   - name: "BTF" # 预紧器点火时刻
@@ -58,6 +59,7 @@ parameters:
     type: "continuous"
     min: 10.0 # ms
     max: 100.0
+    default: 20.0
     trainable: True
 
   - name: "LLATTF" # 限力切换时刻
@@ -66,6 +68,7 @@ parameters:
     type: "continuous"
     min: 0.0 # ms
     max: 150.0
+    default: 150.0
     trainable: True
 
   - name: "AFT" # 气囊点火时刻
@@ -74,6 +77,7 @@ parameters:
     type: "continuous"
     min: 10.0 # ms
     max: 100.0
+    default: 20.0
     trainable: True
 
   # --- 3. 乘员/座椅状态 (Occupant/Seat Status) - State ---
@@ -83,16 +87,18 @@ parameters:
     index: 8
     role: "state"
     type: "continuous"
-    min: 0.0
-    max: 300.0 # mm
+    min: -110.0
+    max: 110.0 # mm
+    default: 0.0
     trainable: False
 
   - name: "SH" # 座椅高度
     index: 9
     role: "state"
     type: "continuous"
-    min: 0.0
-    max: 100.0 # mm
+    min: -10.0
+    max: 70.0 # mm
+    default: 0.0
     trainable: False
 
   - name: "RA" # 靠背角
@@ -100,7 +106,8 @@ parameters:
     role: "state"
     type: "continuous"
     min: 15.0 # degree
-    max: 30.0
+    max: 40.0
+    default: 25.0
     trainable: False
 
   # --- 4. 离散特征 - State ---
