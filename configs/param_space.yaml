@@ -39,18 +39,18 @@ parameters:
     index: 3
     role: "control"
     type: "continuous"
-    min: 2.0  # kN
+    min: 1.0  # kN
     max: 7.0  # kN
-    default: 4.0
+    default: 2.5
     trainable: False  # [可配置] 是否参与寻优
 
   - name: "LL2" # 安全带二级限力值
     index: 4
     role: "control"
     type: "continuous"
-    min: 1.5  # kN
+    min: 0.5  # kN
     max: 4.5  # kN
-    default: 4.0
+    default: 2.5
     trainable: False # [可配置] 是否参与寻优
 
   - name: "BTF" # 预紧器点火时刻
@@ -66,7 +66,7 @@ parameters:
     index: 6
     role: "control"
     type: "continuous"
-    min: 0.0 # ms
+    min: 10.0 # ms
     max: 150.0
     default: 150.0
     trainable: True
@@ -115,6 +115,8 @@ parameters:
     index: 11
     role: "state"
     type: "discrete"
+    min: 0
+    max: 1
     values: [0, 1] # 0: 副驾，1: 主驾
     trainable: False
 
@@ -122,5 +124,7 @@ parameters:
     index: 12
     role: "state"
     type: "discrete"
+    min: 1
+    max: 3
     values: [1, 2, 3] # 1:5th, 2:50th, 3:95th
     trainable: False

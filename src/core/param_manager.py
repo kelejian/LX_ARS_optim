@@ -61,8 +61,7 @@ class ParamManager:
             logger.info(f"Added {abs_path} to sys.path for class definitions.")
         
         try:
-            # 尝试导入，验证环境是否这就绪
-            # 注意：根据 dataset_prepare.py，DataProcessor 在 utils.dataset_prepare 中
+            # 尝试导入，验证环境是否这就绪; DataProcessor 在 utils.dataset_prepare 中
             from utils.dataset_prepare import DataProcessor
         except ImportError as e:
             logger.error(f"Failed to import DataProcessor from {abs_path}. "
