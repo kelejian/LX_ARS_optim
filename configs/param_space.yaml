@@ -3,11 +3,14 @@
 # ---------------------------------------------------------
 # 参数空间定义 (Parameter Space Definition)
 # ---------------------------------------------------------
-# 对应 data_package.py 中 params_np 的 13 维向量结构, 参数顺序必须一致
+# 对应 data_package.py 中 params_np 的 13 维向量结构, 参数顺序必须一致（同样对应损伤预测模型的输入特征顺序）
+# Index: 对应模型输入 Tensor 的列索引
+# Role: control (优化变量) / state (工况条件)
+# Type: continuous (连续变量) / discrete (离散变量)
 # 只有 role='control' 且 trainable=True 的参数才会被 ARS 算法优化
 parameters:
   # --- 1. 碰撞工况 (Crash Conditions) - State ---
-  - name: "impact_velocity"
+  - name: "impact_velocity" # 碰撞速度
     index: 0
     role: "state"
     type: "continuous"
@@ -15,7 +18,7 @@ parameters:
     max: 65.0 # km/h, 需涵盖数据集最大值
     trainable: False
 
-  - name: "impact_angle"
+  - name: "impact_angle" # 碰撞角度
     index: 1
     role: "state"
     type: "continuous"
@@ -23,7 +26,7 @@ parameters:
     max: 45.0
     trainable: False
 
-  - name: "overlap"
+  - name: "overlap" # 碰撞重叠率
     index: 2
     role: "state"
     type: "continuous"
@@ -62,7 +65,7 @@ parameters:
     default: 20.0
     trainable: True
 
-  - name: "LLATTF" # 限力切换时刻
+  - name: "LLATTF" # 二级限力切换时刻
     index: 6
     role: "control"
     type: "continuous"
@@ -83,7 +86,7 @@ parameters:
   # --- 3. 乘员/座椅状态 (Occupant/Seat Status) - State ---
   # 虽然物理上可调，但在单次碰撞优化中通常作为初始条件
 
-  - name: "SP" # 座椅位置
+  - name: "SP" # 座椅前后位置
     index: 8
     role: "state"
     type: "continuous"
@@ -101,7 +104,7 @@ parameters:
     default: 0.0
     trainable: False
 
-  - name: "RA" # 靠背角
+  - name: "RA" # 座椅靠背角
     index: 10
     role: "state"
     type: "continuous"
@@ -111,7 +114,7 @@ parameters:
     trainable: False
 
   # --- 4. 离散特征 - State ---
-  - name: "is_driver_side"
+  - name: "is_driver_side" # 乘员位置类型
     index: 11
     role: "state"
     type: "discrete"
@@ -120,7 +123,7 @@ parameters:
     values: [0, 1] # 0: 副驾，1: 主驾
     trainable: False
 
-  - name: "OT" # 乘员体征 (1:5th, 2:50th, 3:95th)
+  - name: "OT" # 乘员体征类别 (1:5th, 2:50th, 3:95th)
     index: 12
     role: "state"
     type: "discrete"
