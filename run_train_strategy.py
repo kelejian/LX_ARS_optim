@@ -112,7 +112,7 @@ def train(args):
     # (A) ParamManager
     pm = ParamManager(
         param_space_path="configs/param_space.yaml",
-        preprocessor_path=os.path.join(config['paths']['surrogate_project_dir'], "data", "preprocessors.joblib"),
+        preprocessor_path=os.path.join(config['paths']['preprocessors_path']),
         surrogate_project_dir=config['paths']['surrogate_project_dir'],
         device=device.type
     )

@@ -20,6 +20,7 @@ paths:
   # 数据集路径
   data_input: "../LX_model_injurypredict/data/data_input.npz"
   data_labels: "../LX_model_injurypredict/data/data_labels.npz"
+  preprocessors_path: "../LX_model_injurypredict/data/preprocessors.joblib"
   
   # 本项目输出
   output_dir: "./outputs"
@@ -55,7 +56,6 @@ optimization:
     weight_hic: 1.0
     weight_dmax: 1.0
     weight_nij: 0.5
-    weight_mais: 0.0 # MAIS 通常不可导(argmax)，建议优化连续值
 
   # 物理约束处理
   constraints:

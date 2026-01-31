@@ -19,9 +19,9 @@ class ARS_Optimizer:
     
     核心流程 (Pipeline):
     1. [State Encoding]: 将工况参数和波形转换为模型可读的归一化张量。
-    2. [Step 3 - Global Proposal]: 使用策略网络 (StrategyNet) 生成初始参数猜测 a_0。
+    2. [Global Proposal]: 使用策略网络 (StrategyNet) 生成初始参数猜测 a_0。
        - 此时 a_0 在 Optimization Space [-1, 1]。
-    3. [Step 4 - Local Refinement]: 基于代理模型 (Surrogate) 的梯度信息，对 a 进行精调。
+    3. [Local Refinement]: 基于代理模型 (Surrogate) 的梯度信息，对 a 进行精调。
        - 使用 Projected Gradient Descent (PGD) 确保参数在合法边界内。
     """
 
@@ -39,7 +39,7 @@ class ARS_Optimizer:
         # (1) 参数管理器
         self.param_manager = ParamManager(
             param_space_path=os.path.join("configs", "param_space.yaml"),
-            preprocessor_path=os.path.join(config['paths']['surrogate_project_dir'], "data", "preprocessors.joblib"),
+            preprocessor_path=os.path.join(config['paths']['preprocessors_path']),
             surrogate_project_dir=config['paths']['surrogate_project_dir'],
             device=self.device.type
         )

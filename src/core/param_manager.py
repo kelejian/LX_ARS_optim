@@ -108,7 +108,13 @@ class ParamManager:
 
     def _build_normalization_tensors(self):
         """
-        核心逻辑：从 sklearn 对象中提取参数，构建统一的 (x - offset) * scale 计算图
+        核心逻辑：从 sklearn 对象中提取参数，构建统一的 (x - offset) * scale 计算图, 保证对连续特征的可微性。
+        规则总结：
+        1. 连续特征: Indices 0-10
+           - MinMaxScaler: X_std = (X - min) / (max - min), offset = min, scale = 1/(max-min)
+           - MaxAbsScaler: X_std = X / max_abs, offset = 0, scale = 1/max_abs
+        2. 离散特征: Indices 11, 12
+           - 使用 LabelEncoder 编码，建立查表字典 {physical_val: encoded_val}
         """
         proc = self.processor
         
@@ -210,14 +216,14 @@ class ParamManager:
                 if idx in self.state_indices:
                     val = state_dict.get(p['name'])
                     if val is None: raise ValueError(f"Missing state: {p['name']}")
-                    continuous_phys[:, idx] = val
+                    continuous_phys[:, idx] = val # 操作将标量 val 广播到整个批次的第 idx 列, 批次内所有样本在该特征位置使用相同的值
                 # 如果是 control, 下一步会覆盖
         
         # B. 填入 Action (Control -> BATCH Assign)
         for i, global_idx in enumerate(self.control_indices):
             # 确保 action 也是连续特征 (理论上是的，离散 control 暂不支持梯度优化)
             if global_idx < 11:
-                continuous_phys[:, global_idx] = action_tensor[:, i]
+                continuous_phys[:, global_idx] = action_tensor[:, i] # 操作将 action_tensor 的第 i 列赋值到 continuous_phys 的第 global_idx 列, 保持批次内样本对应关系
 
         # 2. 连续特征归一化 (Tensor Vectorization)
         # cont_norm = (x - offset) * scale
@@ -225,7 +231,7 @@ class ParamManager:
         cont_norm = (continuous_phys - self.cont_offset) * self.cont_scale
         
         # 3. 拼装离散特征 (B, 2)
-        # 离散特征通常是 State，暂不支持作为 Control 优化
+        # 离散特征目前是 State，暂不支持作为 Control 优化
         discrete_enc_list = []
         for global_idx in [11, 12]: # Hardcoded for this project structure
             # 查找物理值
@@ -258,11 +264,11 @@ class ParamManager:
     # =========================================================
 
     def normalize_action(self, action_phys: torch.Tensor) -> torch.Tensor:
-        """物理值 -> [-1, 1] (用于优化器内部)"""
+        """归一化"""
         return 2.0 * (action_phys - self.control_min_t) / (self.control_max_t - self.control_min_t) - 1.0
 
     def denormalize_action(self, action_opt: torch.Tensor) -> torch.Tensor:
-        """[-1, 1] -> 物理值 (用于输入模型)"""
+        """反归一化"""
         # Clamp 确保不越界
         action_opt = torch.clamp(action_opt, -1.0, 1.0)
         return 0.5 * (action_opt + 1.0) * (self.control_max_t - self.control_min_t) + self.control_min_t
